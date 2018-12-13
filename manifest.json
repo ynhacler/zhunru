@@ -1,0 +1,31 @@
+{
+    "manifest_version": 2,
+    "name": "zhunru",
+    "version": "1.0.0",
+    "description": "准入账号免输入插件",
+    "icons":
+    {
+        "48": "img/icon.png"
+    },
+    "browser_action": {
+        "default_title": "查看",
+        "default_icon": "img/icon.png",
+        "default_popup": "popup.html"
+    },
+    "permissions":
+    [
+        "contextMenus", 
+        "tabs", 
+        "webRequest", 
+        "activeTab",
+        "webRequestBlocking",
+        "storage", 
+        "http://172.21.0.19:8080/*" 
+    ],
+    "content_scripts": [
+        {
+        "matches": ["http://172.21.0.19:8080/*"],
+        "js": ["jquery.min.js","contentscript.js"]
+        }
+    ]
+}

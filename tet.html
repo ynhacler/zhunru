@@ -1,0 +1,774 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="renderer" content="webkit" />
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0 maximum-scale=1.0, user-scalable=no" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+        <title>WIFI</title>
+        <link rel="stylesheet" href="./css/reset.css" />
+        <link rel="stylesheet" href="./css/style.css" />
+        <script src="/am/page/lib/js/jquery-1.11.0.min.js"></script>
+        <script src="/am/page/portal/lib/js/i18nUtils-1.0.js"></script>
+        <script src="/am/page/portal/lib/js/portalService-1.0.js"></script>
+        <script type="text/javascript" src="./placeholder-support.js"></script>
+    </head>
+    <body>
+    
+
+
+                <!-- authbox 用户名认证-->
+                <div class="authBox" id="USER_PASSWORD_BOX" style="display:block">
+                    <div class="tit"><span i18n-key="userPasswordAuth"></span></div>
+                    <div class="row first">
+                        <input type="text" name="username" class="text" id="un-userName" i18n-key="userName" onclick="hideMessage('message-loginname')" />
+                    </div>
+                    <div class="row" id="staticPsdDiv">
+                        <input type="password"  name="password" class="text" id="un-password" onclick="hideMessage('message-loginname')" i18n-key="password"/>
+                        <span id="message-loginname" class="propt"  style="display: none;" i18n-key="usernameError"></span>
+                    </div>
+                    <!-- 动态密码发送短信-->
+                    <div class="row" id="dynamicMsgDiv" style="display:none">
+                        <div class="col3" i18n-key="verificationCode"></div>
+                        <div class="col3">
+                            <input type="password" class="text"  i18n-key="verificationCode" id="un-dynamicPassword"/>
+                        </div>
+                        <div class="col4" style="display:table;">
+                            <a id="un-sendPassword" class="sendBtn senVer" i18n-key="sendVerificationCode" style="display: table-cell;vertical-align: middle;"></a>
+                        </div>
+                    </div>
+                    <!-- 动态密码令牌-->
+                    <div class="row"  id="dynamicTokenDiv" style="display:none">
+                        <div class="col3" i18n-key="dynamicpassword"></div>
+                        <div class="col7">
+                            <input type="password" class="text" id="un-TokenPassword"  style="width:100%;"  i18n-key="dynamicpassword"/>
+                        </div>
+                    </div>
+                    <div class="loginBtn">
+                        <button  type="button" class="loginBtn1" id="un-login" i18n-key="login"></button>
+                        <button  type="button" class="loginBtn2" style="margin-left: 10px;" onclick="changeLoginType('SMS_BOX')" i18n-key="smsChange"></button>
+                    </div>
+                </div>
+                
+
+                <script>
+                var ids = ['SMS_BOX', 'USER_PASSWORD_BOX'];
+                var changeLoginType = function (type) {
+                    for (var i = 0; i < ids.length; i++) {
+                        if (ids[i] === type) {
+                            document.getElementById(ids[i]).style.display = 'block';
+                        } else {
+                            document.getElementById(ids[i]).style.display = 'none';
+                        }
+                    }
+                };
+                changeLoginType('SMS_BOX');
+
+                var hideMessage = function (id) {
+                    document.getElementById(id).style.display = 'none';
+                }
+                </script>
+
+
+
+
+                <!-- authbox 二次免登录认证-->
+                <div class="authBox autologin" id="autologin" style="display:none">
+                    <div class="tit"><h2><span i18n-key="revisitLogintitle"></span></h2></div>
+                    <div class="showAccountNum">
+                        <p class="accountNum"><span i18n-key="currentAccount"></span><span id="loginNameSpan"></span></p>
+                    </div>
+                    <div class="loginBtn"><a id="freeCertification"  i18n-key="revisitLogin"></a></div>
+                    <p class="changeAccount"><a id="changeTheAccount" i18n-key="changeAccount"></a></p>
+                </div>
+
+                <!-- authbox 一键登录-->
+                <div class="authBox" id="ONE_KEY_LOGIN_BOX" style="display:none">
+                    <div class="tit"><h2><span i18n-key="oneKeyLogin"></span></h2></div>
+                    <p class="oneKeyLoginslogan" i18n-key="oneKeyLoginslogan"></p>
+                    <div class="loginBtn">
+                        <a id="onekeyLogin" onclick="portal.oneKeyLogin.oneKeyLogin()"i18n-key="oneKeyLogin"></a>
+                    </div>
+                </div>
+
+            </div>
+            
+        </div>
+        <div id="showWinDiv" class="messages" style="display:none">
+            <div class="win" style="height:100%; width:100%; position:fixed; top:0px; left:0px;z-index: 2000;">
+                <div class="winbox" style="height:172px; width:266px; position:absolute; top:0px; left:0px; bottom:0px; right:0px; margin:auto;">
+                    <div class="showMessage" style="height:166px; width:260px; background:url(/am/page/portal/config/common/images/win_box.png) repeat; border:3px solid #999;">
+                        <p style="padding:20px; height:80px; overflow:auto; line-height:24px; border-bottom:1px solid #999; margin:0px; font-size:14px; color:#000;" id="ms-message">
+                        </p>
+                        <div class="showBtn" style="text-align:center; padding:8px 0;">
+                            <a id ="ms-cancelBtn"  class="cancelBtn" style="display:none; margin:0 5px; height:28px; line-height:28px; border:none; text-decoration:underline; background: transparent; width:90px; font-size:14px; color:#000; cursor:pointer;" i18n-key="cancel">
+                            </a>
+                            <a id="ms-sureBtn" class="sureBtn"  style="display:none; padding: .3em 1em; margin:0 5px;  height:28px; line-height:28px; border:1px solid #999; background: transparent; width:90px; font-size:14px; color:#000; cursor:pointer;" i18n-key="ok">
+                            </a>
+                            <a id="ms-alertSureBtn" class="alertSureBtn" style="display:inline-block; margin:0 5px; height:28px; line-height:28px; border:1px solid #999; background: transparent; width:90px; color:#000; cursor:pointer;" i18n-key="ok">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" id="revisit" value="false" />
+        <input type="hidden" id="loginName" />
+        <input type="hidden" id="enOrCh" value="true" />
+
+        <div id="bg"></div>
+        <div id="show" style="display: none;">
+            <button id="closeBtn">X</button>
+            <div class="tit"><h2><span i18n-key="weixinCode"></span></h2></div>
+            <div class="qrCodeGuestDiv pc">
+                <div class="qrCodeGuestImageDiv">
+                    <br/>
+                    <p>
+                        <img  width="100%" height="100%"  class="wxCodeGuestImage" />
+                    </p>
+                </div>
+                <div class="qrCodeGuestTextDiv">
+                    <div class="editArea">
+                        <h2><span i18n-key="weixinCodeHint"></span></h2>
+                    </div>
+                    <div class="row">
+                        <div class="col3"  i18n-key="weixinSecurityCode"></div>
+                        <div class="col7">
+                            <input type="text" id="wx-securityCode-needMobile" i18n-key="weixinSecurityCode" class="text" />
+                        </div>
+                    </div><br/>
+                    <div class="loginBtn">
+                        <!--先验证手机号之后，弹出验证微信动态码，之后的登录按钮-->
+                        <a  i18n-key="login" id ="wxCodeLoginNeedMobile"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="showPasswordDiv" style="display: none;">
+            <button id="closeShowPwdBtn">X</button>
+            <div class="tit"><h2><span i18n-key="passwordExpired" style="color:#0b82d0"></span></h2></div>
+            <div class=" pc">
+                <div class="qrCodeGuestDiv pc">
+                    <div class="row">
+                        <div class="col3"  i18n-key="newPassword"></div>
+                        <div class="col7">
+                            <input type="password" id="un-newpassword" i18n-key="newPassword" class="text" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col3"  i18n-key="confirmPassword"></div>
+                        <div class="col7">
+                            <input type="password" id="un-confirmPassword" i18n-key="confirmPassword" class="text" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col3" ></div>
+                        <div class="col7 loginBtn">
+                            <a  i18n-key="ok" id ="submitNewPasword"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="passwordRemindDiv" style="display: none">
+            <div class="tit"><h2><span i18n-key="hint" style="color: #0b82d0"></span></h2></div>
+            <div class="pc">
+                <div id="warning">
+                    <p><span i18n-key="passwordWillExpire"></span>&nbsp;<span id="remindExpirationInDays"></span>&nbsp;<span i18n-key="changePasswordRemind"></span></p>
+                </div>
+                <hr />
+                <div class="loginBtn" align="center">
+                    <button i18n-key="modifyImmediately" id="passwordModifyImmediately"></button>
+                    <button i18n-key="notModify" id="passwordNotModify"></button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
+
+<script type="text/javascript">
+    (function () {
+        var language = 'zh';
+        i18n.push('mobileLogin', '手机验证登录', language)
+                .push('oneKeyLoginslogan', '您可以点击下面的按钮一键上网：', language)
+                .push('selfCode', '自助扫码', language)
+                .push('selfCodeHint', '请扫描屏幕上的二维码进行上网，祝你上网愉快。', language)
+                .push('weixinCode', '微信扫码', language)
+                .push('weixinCodeHint', '请用微信扫描左侧的二维码并获取验证码，你就可以顺利上网。', language)
+                .push('visitorApplyLogin', '访客自助登录', language)
+                .push('visitorApply', '访客申请', language)
+                .push('smsAuth', '短信验证登录', language)
+                .push('mobile', '请输入您的手机号', language)
+                .push('verificationCode', '请输入您的验证码', language)
+                .push('sendVerificationCode', '发送验证码', language)
+                .push('login', '登录', language)
+                .push('weixinAuth', '微信验证登录', language)
+                .push('openWeixin', '微信连WIFI', language)
+                .push('facebooktAuth', 'facebook验证登录', language)
+                .push('disclaimerLabel', '我已阅读并接受免责声明条款', language)
+                .push('userPasswordAuth', '用户名密码登录', language)
+                .push('userName', '请输入您的账号', language)
+                .push('password', '请输入您的密码', language)
+                .push('guestApply', '访客申请', language)
+                .push('changePassword', '修改密码', language)
+                .push('revisitLogintitle', '二次免认证登录', language)
+                .push('revisitLogin', '登录', language)
+                .push('oneKeyLogin', '一键登录', language)
+                .push('currentAccount', '当前登录账号:', language)
+                .push('changeAccount', '更换账号', language)
+                .push('mobileEmptyMsg', '手机号码未输入', language)
+                .push('smsCodeEmptyMsg', '请输入验证码', language)
+                .push('personalNameEmptyMsg', '请输入姓名', language)
+                .push('companyNameEmptyMsg', "请输入公司", language)
+                .push('visitSubjectEmptyMsg', '请输入事由', language)
+                .push('imageCodeEmptyMsg', '图片验证码未输入', language)
+                .push('verificationCodeEmptyMsg', '验证码未输入!', language)
+                .push('incorrectVerificationCodeMsg', '验证码不正确!', language)
+                .push('disclaimeNotCheckMsg', '请阅读免责声明，接受免责声明后才能登录。', language)
+                .push('userNameEmptyMsg', '请输入用户名!', language)
+                .push('staticPasswordEmptyMsg', '请输入密码！', language)
+                .push('dynamicPasswordEmptyMsg', '请输入动态密码！', language)
+                .push('secondsToResend', '秒后重发', language)
+                .push('verificationCodeSent', '发送验证码成功', language)
+                .push('send', '发送验证码', language)
+                .push('refresh', '刷 新', language)
+                .push('clickSendVerifyCode', '请点击发送验证码！', language)
+                .push('dynamicpassword', '动态密码', language)
+                .push('qrCodeGuestAuth', '协助扫码', language)
+                .push('visitorMobile', '访客手机：', language)
+                .push('visitorpassword', '请输入验证码', language)
+                .push('uese other way', '使用其他登录方式：', language)
+                .push('imageCode', '图片验证码', language)
+                .push('logginIn', '正在登录... ,请稍等。', language)
+                .push('passwordExpired', '首次登录或您的密码已过期，请修改', language)
+                .push('modifyPassoword', '修改密码', language)
+                .push('newPassword', '新密码', language)
+                .push('confirmPassword', '确认密码', language)
+                .push('fieldIsEmpty', '属性为空', language)
+                .push('differentInput', '两次输入不一样', language)
+                .push('modifySuccess', '修改成功', language)
+                .push('weixinSecurityCode', '微信验证码', language)
+                .push('hint', '提示', language)
+                .push('modifyImmediately', '立即修改', language)
+                .push('notModify', '暂不修改', language)
+                .push('emailAuth', '邮箱认证', language)
+                .push('enterEmailAccount', '@ 请输入邮箱账号', language)
+                .push('sendEmail', '发送邮件', language)
+                .push('emailHintMessage', '请登录您输入的邮箱，按照邮箱提示完成认证！', language)
+                .push('email', '邮箱', language)
+                .push('emailAccount', '邮箱账号', language)
+                .push('incorrectEmailAddress', '邮箱格式不正确', language)
+                .push('account', '账号', language)
+                .push('passwordWillExpire', '您的密码将在', language)
+                .push('code', '验证码：', language)
+                .push('name', '姓名：', language)
+                .push('company', '公司：', language)
+                .push('subject', '事由：', language)
+                .push('submit', '提交', language)
+                .push('changePasswordRemind', '天后过期,请及时修改!', language)
+                .push('WeChatWork','企业微信',language)
+                .push('mobilError','手机号码或者验证码输入错误，请重新输入！',language)
+                .push('usernameChange','用户名密码登录',language)
+                .push('usernameError','手机号码或者验证码输入错误，请重新输入！',language)
+                .push('smsChange','短信验证码登录',language);
+        language = 'en';
+        i18n.push('mobileLogin', 'Mobile phone login authentication', language)
+                .push('revisitLogintitle', 'Autologin', language)
+                .push('visitorMobile', 'Mobile:', language)
+                .push('weixinCode', 'weixin code', language)
+                .push('weixinCodeHint', 'Please use the weixin scan two-dimensional code on the left and take the verification code, you can successfully access.', language)
+                .push('visitorpassword', 'verificationCode', language)
+                .push('oneKeyLoginslogan', 'please click the button to connect internet：', language)
+                .push('selfCode', 'Self scan code', language)
+                .push('selfCodeHint', 'Please scan Qr Code on the desk.', language)
+                .push('visitorApplyLogin', 'Visitor apply login', language)
+                .push('visitorApply', 'VisitorApply', language)
+                .push('smsAuth', 'Message authentication login', language)
+                .push('mobile', 'Phone number', language)
+                .push('verificationCode', 'Code', language)
+                .push('sendVerificationCode', 'Send', language)
+                .push('login', 'Login', language)
+                .push('weixinAuth', 'Wechat login', language)
+                .push('openWeixin', 'Open wechat', language)
+                .push('facebooktAuth', 'Facebook login', language)
+                .push('userPasswordAuth', 'User authentication', language)
+                .push('userName', 'Username', language)
+                .push('password', 'Password', language)
+                .push('guestApply', 'Visitors to apply for', language)
+                .push('changePassword', 'change password', language)
+                .push('revisitLogin', 'Revisit Login', language)
+                .push('oneKeyLogin', 'Onekey Login', language)
+                .push('currentAccount', 'Current login account：', language)
+                .push('changeAccount', 'Change the account', language)
+                .push('mobileEmptyMsg', 'Please enter your mobile!', language)
+                .push('smsCodeEmptyMsg', 'Please enter the verification code', language)
+                .push('personalNameEmptyMsg', 'Please enter your name', language)
+                .push('companyNameEmptyMsg', "Please enter your company", language)
+                .push('visitSubjectEmptyMsg', 'Please enter subject', language)
+                .push('imageCodeEmptyMsg', 'Please enter image code!', language)
+                .push('verificationCodeEmptyMsg', 'Please enter verification code!', language)
+                .push('incorrectVerificationCodeMsg', 'Incorrect verification code!', language)
+                .push('disclaimeNotCheckMsg', 'Please accept the disclaime.', language)
+                .push('disclaimerLabel', 'Accept Disclaimer.', language)
+                .push('staticPasswordEmptyMsg', 'Please enter password !', language)
+                .push('dynamicPasswordEmptyMsg', 'Please enter dynamic password !', language)
+                .push('secondsToResend', ' seconds to resend', language)
+                .push('verificationCodeSent', 'Verification Code Sent', language)
+                .push('userNameEmptyMsg', 'Please enter user name !', language)
+                .push('send', 'send', language)
+                .push('refresh', 'Refresh', language)
+                .push('clickSendVerifyCode', 'Please click the button send verifycode ！', language)
+                .push('dynamicpassword', 'Dynamicpassword', language)
+                .push('qrCodeGuestAuth', 'QR Code', language)
+                .push('uese other way', 'Login using other way：', language)
+                .push('imageCode', 'Image Code', language)
+                .push('logginIn', 'Login in ... ,Please wai!.', language)
+                .push('passwordExpired', 'First login or your password has expired, please modify', language)
+                .push('modifyPassoword', 'modify password', language)
+                .push('newPassword', 'new password', language)
+                .push('confirmPassword', 'confirm password', language)
+                .push('fieldIsEmpty', 'Field is empty', language)
+                .push('differentInput', 'Two different input', language)
+                .push('modifySuccess', 'modify success', language)
+                .push('weixinSecurityCode', 'Weixin Security Code', language)
+                .push('hint', 'Hint', language)
+                .push('modifyImmediately', 'modify immediately', language)
+                .push('notModify', 'not modify', language)
+                .push('emailAuth', 'Email Auth', language)
+                .push('enterEmailAccount', '@ Please enter email account', language)
+                .push('sendEmail', 'Send Email', language)
+                .push('emailHintMessage', 'Please log in the mail you entered and following the guidence to finish the certification', language)
+                .push('email', 'Email', language)
+                .push('account', 'Account', language)
+                .push('emailAccount', 'Email Account', language)
+                .push('incorrectEmailAddress', 'Incorrect email address', language)
+                .push('passwordWillExpire', 'Your password will expire in', language)
+                .push('name', 'Name：', language)
+                .push('code', 'Code：', language)
+                .push('company', 'company：', language)
+                .push('subject', 'Subject：', language)
+                .push('submit', 'Submit', language)
+                .push('changePasswordRemind', 'days, please change it!', language)
+                .push('WeChatWork','WeChatWork',language)
+                .push('mobilError','手机号码或者验证码输入错误，请重新输入！',language)
+                .push('usernameChange','用户名密码登录',language)
+                .push('usernameError','手机号码或者验证码输入错误，请重新输入！',language)
+                .push('smsChange','短信验证码登录',language);
+
+        i18n.showLanguageValue(portal.urlParams.language.substr(0, 2));
+        portal.setServerLanguage(portal.urlParams.language.substr(0, 2));
+        supportPlaceholder();
+        // 菜单事件
+            $(".authMenu").each(function(){
+            var $currentMenu = $(this);
+            var $targetBox = $($currentMenu.attr('target'));
+                $currentMenu.click(function(){
+                    $(".authMenu").show();
+                    $(".authBox").hide();
+                    $currentMenu.hide();
+                    $targetBox.show();
+        });
+            });
+
+        //协助扫码相关
+        var isNeedMobile = false;
+        var isVerifyVisitorMobile = false;
+        var isNeedPersonalName = false;
+        var isNeedCompany = false;
+        var isNeedVisitSubject = false;
+
+
+        //获取默认类型,并对页面进行处理
+        var initDefaultType = function () {
+            portal.getDefaultType(
+                    function (json) {
+                        var type = portal.portalType;
+                        if (json.success) {
+                            var data = json.data;
+                            $(".authMethod").show();
+                            $(".authMenu,.authBox").hide();
+                            $(".authMenu").removeClass('authMenu');
+                            if (data.length == 1) {
+                                $(".otherway").hide();
+                            }
+                            portal.getDisclaimer(function (json) {
+                                if (json.success) {
+                                    $(".agreement").prop('checked', json.data.acceptedByDefault);
+                                }
+                            });
+                            for (var i in data) {
+                                var obj = data[i];
+                                if (obj.type === type.QR_CODE_GUEST) {
+                                    portal.qrCodeGuestLogin.additionalRequiredInfoConfig(function (data) {
+                                        var isShowAdditionalFields = false;
+                                        var fields = data.additionalRequiredFields;
+                                        for (var i in fields) {
+                                            isShowAdditionalFields = true;
+                                            var field = fields[i];
+                                            if (field === "mobile") {
+                                                isNeedMobile = true;
+                                                $("#qrCodeGuestMobile").show();
+                                                //值2：协助扫码在Portal页上验证手机号
+                                                if (data.verifyVisitorMobileEnabled && data.verifyGranteeMobileMode === 2) {
+                                                    isVerifyVisitorMobile = true;
+                                                    $("#qrCodeGuestVerificationCode").show();
+                                                }
+                                            } else if (field === "personalName") {
+                                                isNeedPersonalName = true;
+                                                $("#qrCodeGuestName").show();
+                                            } else if (field === "company") {
+                                                isNeedCompany = true;
+                                                $("#qrCodeGuestCompanyDiv").show();
+                                            } else if (field === "visitSubject") {
+                                                isNeedVisitSubject = true;
+                                                $("#qrCodeGuestEvent").show();
+                                            }
+                                        }
+                                        if (isShowAdditionalFields) {
+                                            $("#qrCodeAdditionFields").show();
+                                        } else {
+                                            $("#qrCodeImage").show();
+                                            $("#qrCodeGuestImage").attr('src', '/am/controller/portal/qrCodeGuest/qrCodeImage');
+                                            if (portal.urlParams.editMode) {
+                                                $("#qrCodeGuestImage").attr('src', 'images/qrCodeGuestImage.png');
+
+                                            }
+                                            ;
+                                            portal.qrCodeGuestLogin.tryLogin();
+                                        }
+                                    });
+
+                                }
+
+                                if (obj.type === type.WECHATWORK) {
+                                    portal.weChatWorkQrCodeLogin.weChatWorkTryLogin();
+                                }
+
+                                if (portal.urlParams.revisit === "true" && portal.urlParams.portalType !== type.WEIXIN && portal.urlParams.portalType !== type.FACEBOOK) {
+                                    $("#loginNameSpan").text(portal.urlParams.loginName);
+                                    $("#autologin").show();
+                                    $("#changeTheAccount").click(function () {
+                                        window.location.href = window.location.href.replace('revisit=true', 'revisit=false');
+                                        initDefaultType();
+                                    });
+                                    return;
+                                }
+                                var typeName = type[obj.type];
+                                $("#" + typeName + "_MENU").addClass('authMenu').show();
+                                if (obj.defaultType) {
+                                    $("#" + typeName + "_BOX").show();
+                                    $("#" + typeName + "_MENU").hide();
+                                }
+                            }
+                        } else {
+                            showMessage(json.message, true);
+                        }
+                    }
+            );
+        };
+        initDefaultType();
+
+
+    
+
+        //在pc上，按Enter键也可登录
+        $(window).keydown(function (e) {
+            var btnKey = e.which;
+            if (btnKey == 13) {
+                if ($('#SMS_BOX').css("display") == "block") {
+                    $("#msg-submitSms").click();
+                } else if ($('#USER_PASSWORD_BOX').css("display") == "block") {
+                    $("#un-login").click();
+                } else if ($('#SELF_HELP_VISITOR_BOX').css("display") == "block") {
+                    $("#sv-login").click();
+                } else if ($('#WEIXIN_BOX').css("display") == "block") {
+                    if (needsMobile && $('#show').css("display") !== "block") {
+                        $(".wx-login").click();
+                    } else if ($('#show').css("display") === "block") {
+                        $("#wxCodeLoginNeedMobile").click();
+                    } else {
+                        $("#wxCodeLogin").click();
+                    }
+
+                } else if ($('#ONE_KEY_LOGIN_BOX').css("display") == "block") {
+                    $('#onekeyLogin').click();
+                }
+            }
+        });
+
+
+        var checkNotNull = function ($dom) {
+            var result = true;
+            if (!$dom.val()) {
+                //$dom.focus();
+                result = false;
+            }
+            return result;
+        };
+
+
+   
+
+
+        //用户名密码认证服务
+        (function () {
+            var userPasswordLogin = portal.userPasswordLogin;  //用户名密码认证服务
+            var $username = $("#un-userName");
+            var $password = $("#un-password");
+            var $dynamicMsgDiv = $("#dynamicMsgDiv");//少了两个div和两个输入框的ID
+            var $dynamicTokenDiv = $("#dynamicTokenDiv");
+            var $staticPsdDiv = $("#staticPsdDiv");
+            var $dynamicPassword = $("#un-dynamicPassword");
+            var $dynamicTokenPassword = $("#un-TokenPassword");
+            var _dynamicPassword = $dynamicPassword;
+            var $sendPassword = $("#un-sendPassword");
+            var $login = $("#un-login");
+            var $gustApply = $("#un-gustApply");
+            var $changePassword = $("#un-changePassword");
+            var $freeCertification = $("#freeCertification")
+            var sendAlread = false;
+            var usernamePortalInfo = null;
+
+            //禁用发送按钮
+            //发送按钮文字变为60秒倒计时
+            var t = null;
+            var timeCall = function () {
+                var timer = 60;
+                verifyCodeSend = true;
+                var timeSet = function () {
+                    $sendPassword.addClass('on').attr('disabled', true);
+                    if (timer > 0) {
+                        timer--;
+                        $sendPassword.text(timer + i18n.getValue('secondsToResend'));
+                    } else {
+                        $sendPassword.text(i18n.getValue('sendVerificationCode')).removeClass("on").attr('disabled', false);
+                        sendAlread = false;
+                        clearInterval(t);
+                    }
+                };
+                timeSet();
+                t = setInterval(timeSet, 1000);
+                $sendPassword.text(i18n.getValue('sendDynamicPassword')).removeClass("on").attr('disabled', false);
+                return {
+                    reset: function () {
+                        timer = 0;
+                    }
+                };
+            };
+
+            //重置按键
+            var reset = function () {
+                $dynamicPassword.val('');
+                $dynamicTokenPassword.val('');
+                $password.val('');
+                $sendPassword.text(i18n.getValue('sendDynamicPassword')).removeClass("on").attr('disabled', false);
+                sendAlread = false;
+                if (t) {
+                    clearInterval(t);
+                }
+            };
+
+            var check = function () {
+                if (!checkNotNull($username)) {
+                    $("#message-loginname").show().text(i18n.getValue('userNameEmptyMsg'), function () {
+                        //$username.focus();
+                    });
+                    return false;
+                }
+                if (usernamePortalInfo.staticPasswordRequired) {
+                    if (!checkNotNull($password)) {
+                        $("#message-loginname").show().text(i18n.getValue('staticPasswordEmptyMsg'), function () {
+                            //$password.focus();
+                        });
+                        return false;
+                    }
+                }
+                if (usernamePortalInfo.dynamicPasswordRequired) {
+                    if (!checkNotNull(_dynamicPassword)) {
+                        $("#message-loginname").show().text(i18n.getValue('dynamicPasswordEmptyMsg'), function () {
+                           // _dynamicPassword.focus();
+                        });
+                        return false;
+                    }
+                }
+                return true;
+            };
+            userPasswordLogin.visitorsApply($gustApply);
+
+
+            $username.blur(function () {
+                userPasswordLogin.passwordRequirement($username.val(), function (json) {
+                    if (json.success) {
+                        $staticPsdDiv.hide();
+                        $dynamicMsgDiv.hide();
+                        $dynamicTokenDiv.hide();
+
+                        usernamePortalInfo = json.data;
+                        $dynamicMsgDiv.hide();
+                        $dynamicTokenDiv.hide();
+                        if (json.data.dynamicPasswordRequired) {
+                            if (json.data.needsGetDynamicPassword) {
+                                $dynamicMsgDiv.show();
+                                //$dynamicPassword.focus();
+                                _dynamicPassword = $dynamicPassword;
+                            } else {
+                                $dynamicTokenDiv.show();
+                                //$dynamicTokenPassword.focus();
+                                _dynamicPassword = $dynamicTokenPassword;
+                            }
+                        }
+                        if (json.data.staticPasswordRequired) {
+                            $staticPsdDiv.show();
+                            //$password.focus();
+                        }
+                    }
+                });
+            }).change(reset);
+
+
+
+            $sendPassword.click(function () {
+                if (sendAlread) {
+                    return;
+                }
+                if (!checkNotNull($username)) {
+                    showMessage(i18n.getValue('userNameEmptyMsg'));
+                    return false;
+                }
+                var timeCallProcess = timeCall();
+                userPasswordLogin.getDynamicPassword($username.val(), function (jsonData) {
+                    if (jsonData.success) {
+                        sendAlread = true;
+                    } else {
+                        timeCallProcess.reset();
+                    }
+                });
+            });
+
+
+            $("#closeShowPwdBtn").click(function () {
+                $('#bg').hide();
+                $('#showPasswordDiv').hide();
+                $('#confirmPassword').val('');
+                $('#un-confirmPassword').val('');
+            });
+
+
+            $("#submitNewPasword").click(function () {
+                if (!checkNotNull($('#un-newpassword'))) {
+                    $("#message-loginname").show().text(i18n.getValue('fieldIsEmpty'));
+                    return false;
+                }
+                if (!checkNotNull($('#un-confirmPassword'))) {
+                    $("#message-loginname").show().text(i18n.getValue('fieldIsEmpty'));
+                    return false;
+                }
+                if ($('#un-newpassword').val() != $('#un-confirmPassword').val()) {
+                    $("#message-loginname").show().text(i18n.getValue('differentInput'));
+                    return false;
+                }
+                userPasswordLogin.changeExpiredPassword($('#un-newpassword').val(), $('#un-confirmPassword').val(), function (data) {
+                    if (data.success) {
+                        $('#bg').hide();
+                        $('#showPasswordDiv').hide();
+                        $("#message-loginname").show().text(i18n.getValue('modifySuccess'));
+                    } else {
+                        $("#message-loginname").show().text(data.message);
+                    }
+                });
+            });
+
+            $('#passwordModifyImmediately').click(function () {
+                $('#passwordRemindDiv').hide();
+                $('#bg').show();
+                $('#showPasswordDiv').show();
+            });
+
+            $('#passwordNotModify').click(function () {
+                $('#passwordRemindDiv').hide();
+                portal.nextUrl();
+            });
+
+            $login.click(function () {
+                if (!check()) {
+                    return;
+                }
+
+                var loginError = function (json) {
+                    $("#ms-sureBtn").click();
+                    if (!json.success) {
+                        if (json.errorCode === portal.errorCode.USER_MUST_RESET_PASSWORD) {
+                            $('#bg').show();
+                            $('#showPasswordDiv').show();
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                };
+
+                var passwordRemindMethod = function (json) {
+                    $("#ms-sureBtn").click();
+                    if (json.remainingDays === 0) {
+                        var remainingDays = "今";
+                        $('#remindExpirationInDays').html(remainingDays);
+                    } else {
+                        $('#remindExpirationInDays').html(json.remainingDays);
+                    }
+                    $('#bg').show();
+                    $('#passwordRemindDiv').show();
+                };
+                showMessage(i18n.getValue('logginIn'));
+                userPasswordLogin.login({
+                    loginName: $username.val(),
+                    password: $password.val(),
+                    dynamicPassword: _dynamicPassword.val()
+                }, loginError, passwordRemindMethod);
+
+            });
+            $changePassword.click(function () {
+                userPasswordLogin.resetPassword();
+            });
+
+            //二次免认证
+            $freeCertification.click(function () {
+                showMessage(i18n.getValue('logginIn'));
+
+                var loginErrorMethod = function (json) {
+                    $("#ms-sureBtn").click();
+                    if (!json.success) {
+                        if (json.errorCode === portal.errorCode.ERROR_PASSWORD_EXPIRED) {
+                            $('#bg').show();
+                            $('#showPasswordDiv').show();
+                        } else {
+                            portal.commonLoginError(json);
+                        }
+                    }
+                };
+
+                var passwordRemindMethod = function (json) {
+                    $("#ms-sureBtn").click();
+                    if (json.remainingDays === 0) {
+                        var passwordRemainingDays = "今";
+                        $('#remindExpirationInDays').html(remainingDays);
+                    } else {
+                        $('#remindExpirationInDays').html(json.remainingDays);
+                    }
+                    $('#bg').show();
+                    $('#passwordRemindDiv').show();
+                };
+                portal.revisitLogin.revisitLogin(loginErrorMethod, passwordRemindMethod);
+            });
+        })();
+
+
+
+
+
+
+
+    })();
+</script>
