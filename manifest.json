@@ -20,11 +20,11 @@
         "activeTab",
         "webRequestBlocking",
         "storage", 
-        "http://172.21.0.19:8080/*" 
+        "http://172.21.0.28:9001/*"
     ],
     "content_scripts": [
         {
-        "matches": ["http://172.21.0.19:8080/*"],
+        "matches": ["http://172.21.0.28:9001/*"],
         "js": ["jquery.min.js","contentscript.js"]
         }
     ]

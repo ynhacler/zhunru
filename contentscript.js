@@ -1,6 +1,6 @@
-var z_u = $('#un-userName');
-var z_p = $('#un-password');
-var z_b = $('#un-login');
+var z_u = $('#UserName');
+var z_p = $('#PassWord');
+var z_b = $('.login-an');
 
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
@@ -13,7 +13,7 @@ chrome.runtime.onMessage.addListener(
             sendResponse({state:'填写成功！'});
         }
         if (request.action == "submit") {
-            z_b.submit();
+            z_b.click();
             sendResponse({state:'提交成功！'});
         }
     }
